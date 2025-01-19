@@ -1,18 +1,14 @@
 # Shiro
 
-一个极简主义的个人网站，体现了纸的纯净和雪的清新。
+一个极简主义的个人网站，纸的纯净和雪的清新。
 
 为 [Mix Space](https://github.com/mx-space) 服务的个人站点前端。
-
-<!-- [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FInnei%2FShiro&env=NEXT_PUBLIC_GATEWAY_URL,NEXT_PUBLIC_API_URL,NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY&project-name=shiro&demo-title=%E9%9D%99%E3%81%8B%E3%81%AA%E6%A3%AE&demo-description=Innei's%20site%20using%20Shiro&demo-url=https%3A%2F%2Finnei.in) -->
 
 以下是一些使用 Shiro 的示例站点：
 
 - [静かな森](https://innei.in)
 - [可愛い松](https://blog.wibus.ren/)
-- [HuaSui](https://www.vlo.cc/)
-- [天翔 TNXG](https://tnxg.top)
-- [Star](https://www.xingbest.fun)
+- [启动台の博客](https://www.launchpadx.top/)
 
 欢迎你来体验 Shiro 的魅力！
 
@@ -37,7 +33,7 @@
 
 ## 📄 使用文档
 
-前往：https://mx-space.js.org/themes/shiro
+前往：https://mx-space.js.org/docs/themes/shiro/deploy
 
 感谢 @wibus-wee 和 @wuhang2003 等其他社区贡献者编写。
 
@@ -68,7 +64,7 @@
 
 ## :rocket: 部署
 
-[看这里](https://mx-space.js.org/themes/shiro).
+[看这里](https://mx-space.js.org/docs/themes/shiro/deploy).
 
 ## :whale: 运行
 
@@ -103,12 +99,12 @@ docker compose pull # 后续更新镜像
 
 ## :heart: 鸣谢 & 许可
 
-2023 © Innei，本软件遵循 AGPLv3 许可证，附加特定的商业使用条件。此外，使用本项目还需要遵循[附加条款和条件](ADDITIONAL_TERMS.md)。
+2024 © Innei，本软件遵循 AGPLv3 许可证，附加特定的商业使用条件。此外，使用本项目还需要遵循[附加条款和条件](ADDITIONAL_TERMS.md)。
 
 部分代码参考自 GPT-4 和 [cali.so](https://github.com/CaliCastle/cali.so)。
 
 感谢 Mix Space Team 和广大社区朋友们的贡献。
 
-![powered-by-vercel](https://images.ctfassets.net/e5382hct74si/78Olo8EZRdUlcDUFQvnzG7/fa4cdb6dc04c40fceac194134788a0e2/1618983297-powered-by-vercel.svg)
+[赞助版](https://github.com/sponsors/Innei)：[白い](https://github.com/innei-dev/Shiroi)
 
 > [个人网站](https://innei.in/) · GitHub [@Innei](https://github.com/innei/)

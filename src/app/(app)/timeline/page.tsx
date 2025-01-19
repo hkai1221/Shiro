@@ -1,13 +1,12 @@
 'use client'
 
-import { useQuery } from '@tanstack/react-query'
-import { memo, useEffect } from 'react'
-import clsx from 'clsx'
-import { m } from 'framer-motion'
-import { useRouter, useSearchParams } from 'next/navigation'
 import type { TimelineData } from '@mx-space/api-client'
-
 import { TimelineType } from '@mx-space/api-client'
+import { useQuery } from '@tanstack/react-query'
+import clsx from 'clsx'
+import { m } from 'motion/react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { memo, useEffect } from 'react'
 
 import { SolidBookmark } from '~/components/icons/bookmark'
 import { NormalContainer } from '~/components/layout/container/Normal'
@@ -37,7 +36,7 @@ type MapType = {
 
 const useJumpTo = () => {
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       const jumpToId = new URLSearchParams(location.search).get('selectId')
 
       if (!jumpToId) return
@@ -69,6 +68,8 @@ const useJumpTo = () => {
 
       // wait for user focus
     }, 100)
+
+    return () => clearTimeout(timer)
   }, [])
 }
 
@@ -196,7 +197,7 @@ export default function TimelinePage() {
               <m.h4
                 className={clsx(
                   'relative mb-4 ml-3 text-lg font-medium',
-                  'rounded-md before:absolute before:inset-y-[4px] before:-left-3 before:w-[2px] before:bg-accent before:content-auto',
+                  'rounded-md before:content-auto before:absolute before:inset-y-[4px] before:-left-3 before:w-[2px] before:bg-accent',
                 )}
               >
                 {year}

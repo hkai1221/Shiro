@@ -1,18 +1,21 @@
 'use client'
 
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect, useMemo, useState } from 'react'
-import clsx from 'clsx'
-import { stagger, useAnimate } from 'framer-motion'
-import { produce } from 'immer'
 import type { RecentlyModel } from '@mx-space/api-client'
-import type { InfiniteData } from '@tanstack/react-query'
-import type { FC } from 'react'
-
 import {
   RecentlyAttitudeEnum,
   RecentlyAttitudeResultEnum,
 } from '@mx-space/api-client'
+import type { InfiniteData } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@tanstack/react-query'
+import clsx from 'clsx'
+import { produce } from 'immer'
+import { stagger, useAnimate } from 'motion/react'
+import type { FC } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useIsLogged } from '~/atoms/hooks'
 import { TiltedSendIcon } from '~/components/icons/TiltedSendIcon'
@@ -24,6 +27,7 @@ import { Divider } from '~/components/ui/divider'
 import { TextArea } from '~/components/ui/input'
 import { Loading } from '~/components/ui/loading'
 import { Markdown } from '~/components/ui/markdown'
+import { BlockLinkRenderer } from '~/components/ui/markdown/renderers/LinkRenderer'
 import { useModalStack } from '~/components/ui/modal'
 import { RelativeTime } from '~/components/ui/relative-time'
 import { usePrevious } from '~/hooks/common/use-previous'
@@ -57,26 +61,29 @@ const PostBox = () => {
 
   const [value, setValue] = useState('')
   const queryClient = useQueryClient()
-  if (!isLogin) return null
+  const { mutateAsync: handleSend, isPending } = useMutation({
+    mutationFn: async () => {
+      apiClient.shorthand.proxy
+        .post({ data: { content: value } })
+        .then((res) => {
+          setValue('')
 
-  const handleSend = () => {
-    apiClient.shorthand.proxy.post({ data: { content: value } }).then((res) => {
-      setValue('')
-
-      queryClient.setQueryData<
-        InfiniteData<
-          RecentlyModel[] & {
-            comments: number
-          }
-        >
-      >(QUERY_KEY, (old) => {
-        return produce(old, (draft) => {
-          draft?.pages[0].unshift(res.$serialized as any)
-          return draft
+          queryClient.setQueryData<
+            InfiniteData<
+              RecentlyModel[] & {
+                comments: number
+              }
+            >
+          >(QUERY_KEY, (old) => {
+            return produce(old, (draft) => {
+              draft?.pages[0].unshift(res.$serialized as any)
+              return draft
+            })
+          })
         })
-      })
-    })
-  }
+    },
+  })
+  if (!isLogin) return null
   return (
     <form onSubmit={preventDefault} className="mb-8">
       <TextArea
@@ -92,10 +99,10 @@ const PostBox = () => {
           handleSend()
         }}
       >
-        <div className="absolute bottom-2 right-2 flex size-5 center">
+        <div className="center absolute bottom-2 right-2 flex size-5">
           <MotionButtonBase
-            onClick={handleSend}
-            disabled={value.length === 0}
+            onClick={() => handleSend()}
+            disabled={value.length === 0 || isPending}
             className="duration-200 disabled:cursor-not-allowed disabled:opacity-10"
           >
             <TiltedSendIcon className="size-5 text-zinc-800 dark:text-zinc-200" />
@@ -127,7 +134,7 @@ const List = () => {
     refetchOnMount: true,
 
     getNextPageParam: (l) => {
-      return l.length > 0 ? l[l.length - 1]?.id : undefined
+      return l.length > 0 ? l.at(-1)?.id : undefined
     },
     initialPageParam: undefined as undefined | string,
   })
@@ -191,6 +198,14 @@ const List = () => {
     <ul ref={scope}>
       {data?.pages.map((page) => {
         return page.map((item) => {
+          const isSingleLinkContent = (() => {
+            const trimmedContent = item.content.trim()
+            return (
+              trimmedContent.startsWith('http') &&
+              trimmedContent.split('\n').length === 1
+            )
+          })()
+
           return (
             <li
               key={item.id}
@@ -212,26 +227,30 @@ const List = () => {
                 </div>
 
                 <div className="relative min-w-0 grow">
-                  <div
-                    className={clsx(
-                      'relative inline-block rounded-xl p-3 text-zinc-800 dark:text-zinc-200',
-                      'rounded-tl-sm bg-zinc-600/5 dark:bg-zinc-500/20',
-                      'max-w-full overflow-auto',
-                    )}
-                  >
-                    <Markdown>{item.content}</Markdown>
+                  {isSingleLinkContent ? (
+                    <BlockLinkRenderer href={item.content} />
+                  ) : (
+                    <div
+                      className={clsx(
+                        'relative inline-block rounded-xl p-3 text-zinc-800 dark:text-zinc-200',
+                        'rounded-tl-sm bg-zinc-600/5 dark:bg-zinc-500/20',
+                        'max-w-full overflow-auto',
+                      )}
+                    >
+                      <Markdown forceBlock>{item.content}</Markdown>
 
-                    {!!item.ref && (
-                      <div>
-                        <RefPreview refModel={item.ref} />
-                      </div>
-                    )}
-                  </div>
+                      {!!item.ref && (
+                        <div>
+                          <RefPreview refModel={item.ref} />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div
                   className={clsx(
                     'mt-4 space-x-8 opacity-50 duration-200 hover:opacity-100',
-                    '[&_button:hover]:text-accent [&_button]:inline-flex [&_button]:space-x-1 [&_button]:text-sm [&_button]:center',
+                    '[&_button]:center [&_button:hover]:text-accent [&_button]:inline-flex [&_button]:space-x-1 [&_button]:text-sm',
                     '[&_button]:-my-5 [&_button]:-ml-5 [&_button]:p-5',
                   )}
                 >
@@ -243,7 +262,7 @@ const List = () => {
                       })
                     }}
                   >
-                    <i className="icon-[mingcute--comment-line]" />
+                    <i className="i-mingcute-comment-line" />
 
                     <span className="sr-only">评论</span>
                     <span>
@@ -257,7 +276,7 @@ const List = () => {
                       handleUp(item.id)
                     }}
                   >
-                    <i className="icon-[mingcute--heart-line]" />
+                    <i className="i-mingcute-heart-line" />
                     <span className="sr-only">喜欢</span>
                     <span>{item.up}</span>
                   </button>
@@ -267,7 +286,7 @@ const List = () => {
                       handleDown(item.id)
                     }}
                   >
-                    <i className="icon-[mingcute--heart-crack-line]" />
+                    <i className="i-mingcute-heart-crack-line" />
                     <span className="sr-only">不喜欢</span>
                     <span>{item.down}</span>
                   </button>
@@ -349,7 +368,7 @@ const DeleteButton = (props: { id: string }) => {
         })
       }}
     >
-      <i className="icon-[mingcute--delete-line]" />
+      <i className="i-mingcute-delete-line" />
       <span className="sr-only">删除</span>
     </button>
   )
@@ -388,7 +407,7 @@ const RefPreview: FC<{ refModel: any }> = (props) => {
     <>
       <Divider className="my-4 w-12 bg-current opacity-50" />
       <p className="flex items-center space-x-2 opacity-80">
-        发表于： <i className="icon-[mingcute--link-3-line]" />
+        发表于： <i className="i-mingcute-link-3-line" />
         <PeekLink href={url} className="shiro-link--underline">
           {title}
         </PeekLink>

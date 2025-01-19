@@ -1,9 +1,4 @@
-import { ImageResponse } from 'next/og'
-import uniqolor from 'uniqolor'
 import type { AggregateRoot } from '@mx-space/api-client'
-import type { ImageResponseOptions, NextRequest } from 'next/server'
-import type { FC } from 'react'
-
 import {
   AggregateController,
   createClient,
@@ -12,6 +7,10 @@ import {
   PostController,
 } from '@mx-space/api-client'
 import { fetchAdaptor } from '@mx-space/api-client/dist/adaptors/fetch'
+import { ImageResponse } from 'next/og'
+import type { ImageResponseOptions, NextRequest } from 'next/server'
+import type { FC } from 'react'
+import uniqolor from 'uniqolor'
 
 import { API_URL } from '~/constants/env'
 
@@ -83,16 +82,22 @@ const HomeOGImage: FC<AggregateRoot> = ({ seo, user: { avatar } }) => {
         width={256}
       />
 
-      <p
+      <div
         style={{
           display: 'flex',
           flexDirection: 'column',
+          marginLeft: '3rem',
+          width: '500px',
+          overflow: 'hidden',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
         <h3
           style={{
             color: '#ffffff99',
             fontSize: '3.5rem',
+            whiteSpace: 'nowrap',
           }}
         >
           {seo.title}
@@ -100,13 +105,15 @@ const HomeOGImage: FC<AggregateRoot> = ({ seo, user: { avatar } }) => {
         <p
           style={{
             fontSize: '1.8rem',
-
+            height: '5.2rem',
+            overflow: 'hidden',
+            lineClamp: 2,
             color: '#ffffff89',
           }}
         >
           {seo.description}
         </p>
-      </p>
+      </div>
     </div>
   )
 }
@@ -196,26 +203,27 @@ export const GET = async (req: NextRequest) => {
       lightness: [95, 96],
     }).color
 
-    let canShownTitle = ''
+    // let canShownTitle = ''
 
-    let leftContainerWidth = 1200 - 80 * 2
-    for (let i = 0; i < title.length; i++) {
-      if (leftContainerWidth < 0) break
-      //  cjk 字符算 64 px
-      const char = title[i]
-      // char 不能是 emoji
-      if ((char >= '\u4e00' && char <= '\u9fa5') || char === ' ') {
-        leftContainerWidth -= 64
-        canShownTitle += char
-      } else if (char >= '\u0000' && char <= '\u00ff') {
-        // latin 字符算 40px
-        leftContainerWidth -= 40
-        canShownTitle += char
-      } else {
-        leftContainerWidth -= 64
-        canShownTitle += char
-      }
-    }
+    // let leftContainerWidth = 1200 - 80 * 2
+    // const cjkWidth = 64
+    // for (let i = 0; i < title.length; i++) {
+    //   if (leftContainerWidth < 0) break
+    //   //  cjk 字符算 64 px
+    //   const char = title[i]
+    //   // char 不能是 emoji
+    //   if ((char >= '\u4e00' && char <= '\u9fa5') || char === ' ') {
+    //     leftContainerWidth -= cjkWidth
+    //     canShownTitle += char
+    //   } else if (char >= '\u0000' && char <= '\u00ff') {
+    //     // latin 字符算 40px
+    //     leftContainerWidth -= 40
+    //     canShownTitle += char
+    //   } else {
+    //     leftContainerWidth -= cjkWidth
+    //     canShownTitle += char
+    //   }
+    // }
 
     return new ImageResponse(
       (
@@ -277,12 +285,10 @@ export const GET = async (req: NextRequest) => {
             <h1
               style={{
                 color: 'rgba(255, 255, 255, 0.92)',
-
-                fontSize: `${(canShownTitle.length / title.length) * 64}px`,
-                whiteSpace: 'nowrap',
-                textOverflow: 'ellipsis',
-                WebkitLineClamp: 1,
-                lineClamp: 1,
+                fontSize: '50px',
+                overflow: 'hidden',
+                maxHeight: '150px',
+                fontWeight: 'bold',
               }}
             >
               {title}
@@ -291,7 +297,7 @@ export const GET = async (req: NextRequest) => {
               style={{
                 color: 'rgba(255, 255, 255, 0.85)',
                 fontSize: '38px',
-                fontWeight: 300,
+                fontWeight: 'lighter',
               }}
             >
               {subtitle}

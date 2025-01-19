@@ -1,6 +1,6 @@
-import React, { useCallback, useLayoutEffect, useState } from 'react'
 import clsx from 'clsx'
 import type { FC, ReactNode } from 'react'
+import { useCallback, useLayoutEffect, useState } from 'react'
 
 import { useIsPrintMode } from '~/atoms'
 import { IcRoundKeyboardDoubleArrowRight } from '~/components/icons/arrow'
@@ -24,12 +24,12 @@ export const MDetails: FC<{ children: ReactNode[] }> = (props) => {
   return (
     <div className="my-2">
       <button
-        className="mb-2 flex cursor-pointer items-center pl-2"
+        className="mb-2 flex cursor-pointer items-center md:pl-2 [&_summary]:text-left"
         onClick={handleOpen}
       >
         <i
           className={clsx(
-            'icon-[mingcute--align-arrow-down-line] mr-2 transition-transform duration-500',
+            'i-mingcute-align-arrow-down-line mr-2 transition-transform duration-500',
             !open && '-rotate-90',
           )}
         >

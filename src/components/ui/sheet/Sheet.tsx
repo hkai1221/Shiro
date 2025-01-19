@@ -1,7 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react'
 import { atom, useStore } from 'jotai'
-import { Drawer } from 'vaul'
 import type { FC, PropsWithChildren, ReactNode } from 'react'
+import * as React from 'react'
+import {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useState,
+} from 'react'
+import { Drawer } from 'vaul'
 
 import { SheetContext } from './context'
 
@@ -19,9 +26,14 @@ export interface PresentSheetProps {
 
 export const sheetStackAtom = atom([] as HTMLDivElement[])
 
-export const PresentSheet: FC<PropsWithChildren<PresentSheetProps>> = (
-  props,
-) => {
+export type SheetRef = {
+  dismiss: () => void
+}
+
+export const PresentSheet = forwardRef<
+  SheetRef,
+  PropsWithChildren<PresentSheetProps>
+>((props, ref) => {
   const {
     content,
     children,
@@ -33,6 +45,12 @@ export const PresentSheet: FC<PropsWithChildren<PresentSheetProps>> = (
   } = props
 
   const [isOpen, setIsOpen] = useState(props.open ?? defaultOpen)
+
+  useImperativeHandle(ref, () => ({
+    dismiss: () => {
+      setIsOpen(false)
+    },
+  }))
 
   const nextRootProps = useMemo(() => {
     const nextProps = {
@@ -74,20 +92,22 @@ export const PresentSheet: FC<PropsWithChildren<PresentSheetProps>> = (
     }
   }, [holderRef, store])
 
-  const Root = Drawer.Root
+  const { Root } = Drawer
 
   const overlayZIndex = zIndex - 1
   const contentZIndex = zIndex
 
   return (
     <Root dismissible={dismissible} {...nextRootProps}>
-      <Drawer.Trigger asChild={triggerAsChild}>{children}</Drawer.Trigger>
+      {!!children && (
+        <Drawer.Trigger asChild={triggerAsChild}>{children}</Drawer.Trigger>
+      )}
       <Drawer.Portal>
         <Drawer.Content
           style={{
             zIndex: contentZIndex,
           }}
-          className="fixed inset-x-0 bottom-0 mt-24 flex max-h-[95vh] flex-col rounded-t-[10px] bg-base-100 p-4"
+          className="fixed inset-x-0 bottom-0 flex max-h-[calc(100svh-5rem)] flex-col rounded-t-[10px] bg-base-100 p-4"
         >
           {dismissible && (
             <div className="mx-auto mb-8 h-1.5 w-12 shrink-0 rounded-full bg-zinc-300 dark:bg-neutral-800" />
@@ -124,4 +144,4 @@ export const PresentSheet: FC<PropsWithChildren<PresentSheetProps>> = (
       </Drawer.Portal>
     </Root>
   )
-}
+})

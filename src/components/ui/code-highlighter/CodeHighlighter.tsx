@@ -1,4 +1,6 @@
-import React, {
+import type * as React from 'react'
+import type { FC } from 'react'
+import {
   use,
   useCallback,
   useEffect,
@@ -6,8 +8,6 @@ import React, {
   useMemo,
   useRef,
 } from 'react'
-import type { FC } from 'react'
-import type { ShikiProps } from './shiki/Shiki'
 
 import { useIsPrintMode } from '~/atoms/css-media'
 import { useIsDark } from '~/hooks/common/use-is-dark'
@@ -17,6 +17,7 @@ import { loadScript, loadStyleSheet } from '~/lib/load-script'
 import { toast } from '~/lib/toast'
 
 import styles from './CodeHighlighter.module.css'
+import type { ShikiProps } from './shiki/Shiki'
 import { ShikiHighLighter } from './shiki/Shiki'
 
 declare global {
@@ -28,10 +29,11 @@ declare global {
 interface Props {
   lang: string | undefined
   content: string
+  startLineNumber?: number
 }
 
 export const HighLighterPrismCdn: FC<Props> = (props) => {
-  const { lang: language, content: value } = props
+  const { lang: language, content: value, startLineNumber = 1 } = props
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(value)
@@ -46,7 +48,10 @@ export const HighLighterPrismCdn: FC<Props> = (props) => {
         {language?.toUpperCase()}
       </span>
 
-      <pre className="line-numbers !bg-transparent" data-start="1">
+      <pre
+        className="line-numbers !bg-transparent"
+        data-start={startLineNumber}
+      >
         <code
           className={`language-${language ?? 'markup'} !bg-transparent`}
           ref={ref}
@@ -116,11 +121,9 @@ const useLoadHighlighter = (ref: React.RefObject<HTMLElement | null>) => {
       'https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.23.0/plugins/line-numbers/prism-line-numbers.min.css',
     )
 
-    Promise.all([
-      loadScript(
-        'https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.23.0/components/prism-core.min.js',
-      ),
-    ])
+    loadScript(
+      'https://lf26-cdn-tos.bytecdntp.com/cdn/expire-1-M/prism/1.23.0/components/prism-core.min.js',
+    )
       .then(() =>
         Promise.all([
           loadScript(
@@ -165,9 +168,7 @@ export const ShikiFallback: FC<ShikiProps> = (props) => {
       return bundledLanguagesKeysSet.has(lang)
     }, [lang]),
   )
-
-  if (!shikiSupported) {
-    return <HighLighterPrismCdn {...props} />
-  }
-  return <ShikiHighLighter {...props} />
+  return (
+    <ShikiHighLighter {...props} lang={shikiSupported ? props.lang : 'text'} />
+  )
 }

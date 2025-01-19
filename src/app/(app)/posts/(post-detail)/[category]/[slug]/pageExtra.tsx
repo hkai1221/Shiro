@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect } from 'react'
 import type { Image } from '@mx-space/api-client'
+import { useRouter } from 'next/navigation'
 import type { PropsWithChildren } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { useSetHeaderMetaInfo } from '~/components/layout/header/hooks'
 import { PostMetaBar } from '~/components/modules/post/PostMetaBar'
-import { CurrentReadingCountingMetaBarItem } from '~/components/modules/shared/MetaBar'
 import { WithArticleSelectionAction } from '~/components/modules/shared/WithArticleSelectionAction'
 import { MainMarkdown } from '~/components/ui/markdown'
 import { noopArr } from '~/lib/noop'
@@ -16,7 +16,11 @@ import { useCurrentPostDataSelector } from '~/providers/post/CurrentPostDataProv
 export const PostTitle = () => {
   const title = useCurrentPostDataSelector((data) => data?.title)!
 
-  return <h1 className="text-balance text-center">{title}</h1>
+  return (
+    <h1 className="mb-8 text-balance text-center text-4xl font-bold leading-tight">
+      {title}
+    </h1>
+  )
 }
 export const MarkdownSelection: Component = (props) => {
   const id = useCurrentPostDataSelector((data) => data?.id)!
@@ -87,9 +91,17 @@ export const PostMetaBarInternal: Component = ({ className }) => {
     }
   })
   if (!meta) return null
-  return (
-    <PostMetaBar meta={meta} className={className}>
-      <CurrentReadingCountingMetaBarItem />
-    </PostMetaBar>
-  )
+  return <PostMetaBar meta={meta} className={className} />
+}
+
+export const SlugReplacer = ({ to }: { to: string }) => {
+  const router = useRouter()
+  const onceRef = useRef(false)
+
+  if (!onceRef.current) {
+    onceRef.current = true
+    router.replace(to)
+  }
+
+  return null
 }

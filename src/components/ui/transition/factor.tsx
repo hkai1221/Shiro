@@ -1,23 +1,24 @@
 'use client'
 
-import { forwardRef, memo, useState } from 'react'
-import { m } from 'framer-motion'
 import type {
   HTMLMotionProps,
   MotionProps,
   Spring,
   Target,
   TargetAndTransition,
-} from 'framer-motion'
+} from 'motion/react'
+import { m } from 'motion/react'
 import type {
   ForwardRefExoticComponent,
   PropsWithChildren,
   RefAttributes,
 } from 'react'
-import type { BaseTransitionProps } from './typings'
+import { forwardRef, memo, useState } from 'react'
 
 import { isHydrationEnded } from '~/components/common/HydrationEndDetector'
 import { microReboundPreset } from '~/constants/spring'
+
+import type { BaseTransitionProps } from './typings'
 
 interface TransitionViewParams {
   from: Target

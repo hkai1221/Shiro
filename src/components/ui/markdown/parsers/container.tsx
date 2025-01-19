@@ -1,6 +1,7 @@
-import React from 'react'
-import { Priority } from 'markdown-to-jsx'
+'use client'
+
 import type { MarkdownToJSX } from 'markdown-to-jsx'
+import { Priority } from 'markdown-to-jsx'
 
 import { clsxm } from '~/lib/helper'
 import { WrappedElementProvider } from '~/providers/shared/WrappedElementProvider'
@@ -30,13 +31,13 @@ const shouldCatchContainerName = [
 export const ContainerRule: MarkdownToJSX.Rule = {
   match: (source: string) => {
     const result =
-      /^\s*::: *(?<type>.*?) *(?:{(?<params>.*?)})? *\n(?<content>[\s\S]+?)\s*::: *(?:\n *)+\n?/.exec(
+      /^\s*::: *(?<type>.*?) *(?:\{(?<params>.*?)\})? *\n(?<content>[\s\S]+?)\s*::: *(?:\n *)+/.exec(
         source,
       )
 
     if (!result) return null
 
-    const type = result.groups!.type
+    const { type } = result.groups!
     if (!type || !type.match(shouldCatchContainerName)) return null
     return result
   },
@@ -155,8 +156,9 @@ export const ContainerRule: MarkdownToJSX.Rule = {
               />
             )
           }
-          default:
+          default: {
             return null
+          }
         }
       }
     }
@@ -179,9 +181,7 @@ export const ContainerRule: MarkdownToJSX.Rule = {
  * :::
  */
 
-type ParsedResult = {
-  [key: string]: string
-}
+type ParsedResult = Record<string, string>
 
 function parseParams(input: string): ParsedResult {
   const regex = /(\w+)=(\w+)/g

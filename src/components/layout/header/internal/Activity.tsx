@@ -1,7 +1,10 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import React, {
+import clsx from 'clsx'
+import { AnimatePresence, m } from 'motion/react'
+import * as React from 'react'
+import {
   createContext,
   memo,
   useContext,
@@ -9,8 +12,6 @@ import React, {
   useEffect,
   useMemo,
 } from 'react'
-import clsx from 'clsx'
-import { AnimatePresence, m } from 'framer-motion'
 
 import { setActivityMediaInfo, setActivityProcessInfo } from '~/atoms/activity'
 import { useActivity } from '~/atoms/hooks'
@@ -33,12 +34,11 @@ const ActivityIconContext = createContext<{
 }>(null!)
 
 const CND_DOMAIN = 'https://fastly.jsdelivr.net/gh/Innei/reporter-assets@main'
-const fetchJsonData = () => {
-  return Promise.all([
+const fetchJsonData = () =>
+  Promise.all([
     fetch(`${CND_DOMAIN}/app-icon.json`).then((res) => res.json() as object),
     fetch(`${CND_DOMAIN}/app-desc.json`).then((res) => res.json() as object),
   ])
-}
 export const Activity = () => {
   const shouldShowMeta = useHeaderMetaShouldShow()
 
@@ -68,8 +68,8 @@ const ActivityIcon = memo(() => {
   const isPageActive = usePageIsActive()
   const { data } = useQuery({
     queryKey: ['activity'],
-    queryFn: async () => {
-      return await apiClient
+    queryFn: async () =>
+      await apiClient
         .proxy(endpoint)
         .post<{
           processName: string
@@ -85,14 +85,11 @@ const ActivityIcon = memo(() => {
           }
         }>()
         .then((res) => res)
-        .catch(() => {
-          return {
-            processName: '',
-            processInfo: undefined,
-            mediaInfo: undefined,
-          }
-        })
-    },
+        .catch(() => ({
+          processName: '',
+          processInfo: undefined,
+          mediaInfo: undefined,
+        })),
     refetchInterval: 1000 * 5 * 60,
     refetchOnMount: 'always',
     retry: false,
@@ -139,7 +136,7 @@ const ActivityIcon = memo(() => {
     <>
       {!!media && (
         <m.div className="absolute inset-y-0 left-0 z-10 flex items-center lg:left-[-30px]">
-          <div className="absolute inset-0 z-[-1] flex center">
+          <div className="center absolute inset-0 z-[-1] flex">
             <div className="size-6 rounded-md ring-2 ring-red-500 dark:ring-red-400" />
           </div>
           <FloatPopover
@@ -157,7 +154,7 @@ const ActivityIcon = memo(() => {
           {processName && (
             <m.div
               key={processName}
-              className="pointer-events-auto absolute inset-y-0 right-0 z-10 flex items-center overflow-hidden lg:right-[-25px]"
+              className="pointer-events-auto absolute inset-y-0 right-3 z-10 flex items-center overflow-hidden lg:right-[-25px]"
               initial={{
                 opacity: 0.0001,
                 y: 15,

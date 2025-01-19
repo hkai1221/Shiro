@@ -1,20 +1,22 @@
+import clsx from 'clsx'
+import type { Variants } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
+import type { PropsWithChildren } from 'react'
 import {
   forwardRef,
   useCallback,
   useEffect,
   useImperativeHandle,
   useMemo,
+  useRef,
   useState,
 } from 'react'
-import clsx from 'clsx'
-import type { PropsWithChildren } from 'react'
 
 import { getViewport } from '~/atoms/hooks'
 import { AutoResizeHeight } from '~/components/modules/shared/AutoResizeHeight'
 import { useMaskScrollArea } from '~/hooks/shared/use-mask-scrollarea'
 import { stopPropagation } from '~/lib/dom'
 import { clsxm } from '~/lib/helper'
-import { toast } from '~/lib/toast'
 
 import { MotionButtonBase } from '../../button'
 import styles from './Shiki.module.css'
@@ -28,24 +30,58 @@ interface Props {
   renderedHTML?: string
 }
 
+const copyIconVariants: Variants = {
+  initial: {
+    opacity: 1,
+    scale: 1,
+  },
+  animate: {
+    opacity: 1,
+    scale: 1,
+  },
+  exit: {
+    opacity: 0,
+    scale: 0,
+  },
+}
 export const ShikiHighLighterWrapper = forwardRef<
   HTMLDivElement,
-  PropsWithChildren<Props>
+  PropsWithChildren<
+    Props & {
+      shouldCollapsed?: boolean
+    }
+  >
 >((props, ref) => {
-  const { lang: language, content: value, attrs } = props
+  const {
+    shouldCollapsed = true,
+    lang: language,
+    content: value,
+    attrs,
+  } = props
 
+  const [copied, setCopied] = useState(false)
+  const copiedTimerRef = useRef<any>()
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(value)
-    toast.success('已复制到剪贴板')
+    setCopied(true)
+
+    clearTimeout(copiedTimerRef.current)
+    copiedTimerRef.current = setTimeout(() => {
+      setCopied(false)
+    }, 2000)
   }, [value])
 
   const [codeBlockRef, setCodeBlockRef] = useState<HTMLDivElement | null>(null)
 
   useImperativeHandle(ref, () => codeBlockRef!)
 
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(shouldCollapsed)
   const [isOverflow, setIsOverflow] = useState(false)
+
   useEffect(() => {
+    if (!shouldCollapsed) {
+      return
+    }
     const $el = codeBlockRef
 
     if (!$el) return
@@ -53,12 +89,13 @@ export const ShikiHighLighterWrapper = forwardRef<
     const windowHeight = getViewport().h
     const halfWindowHeight = windowHeight / 2
     const $elScrollHeight = $el.scrollHeight
+
     if ($elScrollHeight >= halfWindowHeight) {
       setIsOverflow(true)
 
       const $hightlighted = $el.querySelector('.highlighted')
       if ($hightlighted) {
-        const lineHeight = parseInt(
+        const lineHeight = Number.parseInt(
           getComputedStyle($hightlighted).height || '0',
           10,
         )
@@ -67,16 +104,14 @@ export const ShikiHighLighterWrapper = forwardRef<
           $hightlighted,
         )
 
-        $el.scrollTop = lineHeight * childIndexInParent - 30
+        $el.scrollTop = lineHeight * childIndexInParent - $el.clientHeight / 2
       }
     } else {
       setIsOverflow(false)
     }
   }, [value, codeBlockRef])
 
-  const filename = useMemo(() => {
-    return parseFilenameFromAttrs(attrs || '')
-  }, [attrs])
+  const filename = useMemo(() => parseFilenameFromAttrs(attrs || ''), [attrs])
   const [, maskClassName] = useMaskScrollArea({
     element: codeBlockRef!,
     size: 'lg',
@@ -86,7 +121,7 @@ export const ShikiHighLighterWrapper = forwardRef<
 
   return (
     <div
-      className={clsx(styles['code-card'], 'group')}
+      className={clsx(styles['code-card'], 'shiki-block group')}
       onCopy={stopPropagation}
     >
       {!!filename && (
@@ -101,7 +136,7 @@ export const ShikiHighLighterWrapper = forwardRef<
       {!filename && !!language && (
         <div
           aria-hidden
-          className="pointer-events-none absolute bottom-3 right-3 z-10 text-sm opacity-60"
+          className="pointer-events-none absolute bottom-3 right-3 z-[2] text-sm opacity-60"
         >
           {language.toUpperCase()}
         </div>
@@ -110,16 +145,31 @@ export const ShikiHighLighterWrapper = forwardRef<
         <MotionButtonBase
           onClick={handleCopy}
           className={clsx(
-            'absolute right-2 top-2 z-[1] flex text-xs center',
+            'center absolute right-2 top-2 z-[3] flex text-xs',
             'rounded-md border border-accent/5 bg-accent/80 p-1.5 text-white backdrop-blur duration-200',
             'opacity-0 group-hover:opacity-100',
             filename && '!top-12',
           )}
         >
-          <i className="icon-[mingcute--copy-2-fill] size-4" />
+          <AnimatePresence mode="wait">
+            {copied ? (
+              <m.i
+                key={'copied'}
+                className="i-mingcute-check-line size-4"
+                {...copyIconVariants}
+              />
+            ) : (
+              <m.i
+                key={'copy'}
+                className="i-mingcute-copy-2-fill size-4"
+                {...copyIconVariants}
+              />
+            )}
+          </AnimatePresence>
         </MotionButtonBase>
         <AutoResizeHeight spring className="relative">
           <div
+            onCopy={stopPropagation}
             ref={setCodeBlockRef}
             className={clsxm(
               'relative max-h-[50vh] w-full overflow-auto',
@@ -149,7 +199,8 @@ export const ShikiHighLighterWrapper = forwardRef<
           {isOverflow && isCollapsed && (
             <div
               className={`absolute inset-x-0 bottom-0 flex justify-center py-2 duration-200 ${
-                ['mask-both-lg', 'mask-b-lg'].includes(maskClassName)
+                maskClassName.includes('mask-both') ||
+                maskClassName.includes('mask-b')
                   ? ''
                   : 'pointer-events-none opacity-0'
               }`}
@@ -159,7 +210,7 @@ export const ShikiHighLighterWrapper = forwardRef<
                 aria-hidden
                 className="flex items-center justify-center text-xs"
               >
-                <i className="icon-[mingcute--arrow-to-down-line]" />
+                <i className="i-mingcute-arrow-to-down-line" />
                 <span className="ml-2">展开</span>
               </button>
             </div>

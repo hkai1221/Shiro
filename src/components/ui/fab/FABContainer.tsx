@@ -1,12 +1,13 @@
 'use client'
 
-import React, { useEffect, useId, useRef } from 'react'
 import clsx from 'clsx'
 import { typescriptHappyForwardRef } from 'foxact/typescript-happy-forward-ref'
-import { AnimatePresence, m } from 'framer-motion'
 import { atom, useAtomValue } from 'jotai'
-import type { HTMLMotionProps } from 'framer-motion'
+import type { HTMLMotionProps } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
+import type * as React from 'react'
 import type { JSX, PropsWithChildren, ReactNode } from 'react'
+import { useEffect, useId, useRef } from 'react'
 
 import { useIsMobile } from '~/atoms/hooks'
 import { clsxm } from '~/lib/helper'

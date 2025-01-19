@@ -1,6 +1,5 @@
 'use client'
 
-import React, { memo } from 'react'
 import clsx from 'clsx'
 import {
   AnimatePresence,
@@ -8,16 +7,18 @@ import {
   m,
   useMotionTemplate,
   useMotionValue,
-} from 'framer-motion'
+} from 'motion/react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import type { IHeaderMenu } from '../config'
+import * as React from 'react'
+import { memo } from 'react'
 
 import { RootPortal } from '~/components/ui/portal'
 import useDebounceValue from '~/hooks/common/use-debounce-value'
 import { clsxm } from '~/lib/helper'
 import { useIsScrollUpAndPageIsOver } from '~/providers/root/page-scroll-info-provider'
 
+import type { IHeaderMenu } from '../config'
 import { useHeaderConfig } from './HeaderDataConfigureProvider'
 import { useHeaderHasMetaInfo, useMenuOpacity } from './hooks'
 import { MenuPopover } from './MenuPopover'
@@ -93,7 +94,7 @@ const ForDesktop: Component<{
       const bounds = currentTarget.getBoundingClientRect()
       mouseX.set(clientX - bounds.left)
       mouseY.set(clientY - bounds.top)
-      radius.set(Math.sqrt(bounds.width ** 2 + bounds.height ** 2) / 2.5)
+      radius.set(Math.hypot(bounds.width, bounds.height) / 2.5)
     },
     [mouseX, mouseY, radius],
   )

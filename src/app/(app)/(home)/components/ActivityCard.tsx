@@ -1,12 +1,11 @@
 'use client'
 
-import React, { useMemo } from 'react'
+import { CollectionRefTypes } from '@mx-space/api-client'
 import clsx from 'clsx'
 import Link from 'next/link'
+import type { ReactNode } from 'react'
+import { useMemo } from 'react'
 import RemoveMarkdown from 'remove-markdown'
-import type { ReactActivityType } from './types'
-
-import { CollectionRefTypes } from '@mx-space/api-client'
 
 import {
   FaSolidFeatherAlt,
@@ -15,6 +14,8 @@ import {
 } from '~/components/icons/menu-collection'
 import { routeBuilder, Routes } from '~/lib/route-builder'
 import { useAggregationSelector } from '~/providers/root/aggregation-data-provider'
+
+import type { ReactActivityType } from './types'
 
 export const iconClassName =
   'rounded-full border shrink-0 border-accent/30 text-xs center inline-flex size-6 text-accent'
@@ -51,7 +52,7 @@ export const ActivityCard = ({ activity }: { activity: ReactActivityType }) => {
                 iconClassName,
               )}
             >
-              <i className="icon-[mingcute--comment-line]" />
+              <i className="i-mingcute-comment-line" />
             </div>
             <div className="flex items-center gap-2 pl-8">
               <div className="space-x-2">
@@ -149,22 +150,35 @@ export const ActivityCard = ({ activity }: { activity: ReactActivityType }) => {
         )
       }
       case 'like': {
+        let TitleLink: ReactNode = null
+        switch (activity.type) {
+          case CollectionRefTypes.Post: {
+            TitleLink = (
+              <Link href={`/posts/${activity.slug}`}>
+                <b>{activity.title}</b>
+              </Link>
+            )
+            break
+          }
+          case CollectionRefTypes.Note: {
+            TitleLink = (
+              <Link href={`/notes/${activity.nid}`}>
+                <b>{activity.title}</b>
+              </Link>
+            )
+            break
+          }
+          default: {
+            TitleLink = <b>已删除的内容</b>
+          }
+        }
         return (
           <div className="flex translate-y-1/4 items-start gap-2">
             <span className={clsx(iconClassName)}>
-              <i className="icon-[mingcute--heart-line]" />
+              <i className="i-mingcute-heart-line" />
             </span>
             <div className="space-x-2">
-              <small>有人点赞了</small>{' '}
-              <Link
-                href={
-                  activity.slug
-                    ? `/posts/${activity.slug}`
-                    : `/notes/${activity.nid}`
-                }
-              >
-                <b>{activity.title}</b>
-              </Link>
+              <small>有人点赞了</small> {TitleLink}
             </div>
           </div>
         )

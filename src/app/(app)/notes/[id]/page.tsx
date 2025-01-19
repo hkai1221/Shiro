@@ -1,17 +1,8 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
-/* eslint-disable react/display-name */
 import type { NoteModel } from '@mx-space/api-client'
 import type { Metadata } from 'next'
 
 import { AckRead } from '~/components/common/AckRead'
 import { ClientOnly } from '~/components/common/ClientOnly'
-import {
-  buildRoomName,
-  Presence,
-  RoomProvider,
-} from '~/components/modules/activity'
 import { CommentAreaRootLazy } from '~/components/modules/comment'
 import {
   NoteActionAside,
@@ -19,7 +10,6 @@ import {
   NoteBottomTopic,
   NoteFooterNavigationBarForMobile,
   NoteMetaBar,
-  NoteMetaReadingCount,
   NotePasswordForm,
 } from '~/components/modules/note'
 import {
@@ -62,55 +52,55 @@ import {
 } from './pageExtra'
 import { Transition } from './Transition'
 
-async function PageInner({ data }: { data: NoteModel }) {
+export const dynamic = 'force-dynamic'
+
+function PageInner({ data }: { data: NoteModel }) {
   return (
     <>
       <AckRead id={data.id} type="note" />
 
       <NoteHeadCover image={data.meta?.cover} />
       <NoteHeaderMetaInfoSetting />
-      <IndentArticleContainer>
-        <header>
-          <NoteTitle />
-          <span className="flex flex-wrap items-center text-sm text-neutral-content/60">
-            <NoteHeaderDate />
+      <div>
+        <NoteTitle />
+        <span className="flex flex-wrap items-center text-sm text-neutral-content/60">
+          <NoteHeaderDate />
 
-            <ClientOnly>
-              <NoteMetaBar />
-              <NoteMetaReadingCount />
-            </ClientOnly>
-          </span>
-          <NoteRootBanner />
-          {data.hide && (
-            <NoteBanner
-              type="warning"
-              message="这篇文章是非公开的，仅登录可见"
-            />
-          )}
-        </header>
+          <ClientOnly>
+            <NoteMetaBar />
+          </ClientOnly>
+        </span>
 
-        <NoteHideIfSecret>
-          <SummarySwitcher data={data} />
-          <WrappedElementProvider eoaDetect>
-            <Presence />
-            <ReadIndicatorForMobile />
-            <NoteMarkdownImageRecordProvider>
-              <BanCopyWrapper>
-                <MarkdownSelection>
+        <NoteRootBanner />
+        {data.hide && (
+          <NoteBanner type="warning" message="这篇文章是非公开的，仅登录可见" />
+        )}
+      </div>
+
+      <NoteHideIfSecret>
+        <SummarySwitcher data={data} />
+        <WrappedElementProvider eoaDetect>
+          <ReadIndicatorForMobile />
+          <NoteMarkdownImageRecordProvider>
+            <BanCopyWrapper>
+              <MarkdownSelection>
+                <IndentArticleContainer>
+                  <header className="sr-only">
+                    <NoteTitle />
+                  </header>
                   <NoteMarkdown />
-                </MarkdownSelection>
-              </BanCopyWrapper>
-            </NoteMarkdownImageRecordProvider>
+                </IndentArticleContainer>
+              </MarkdownSelection>
+            </BanCopyWrapper>
+          </NoteMarkdownImageRecordProvider>
 
-            <LayoutRightSidePortal>
-              <ArticleRightAside>
-                <NoteActionAside />
-              </ArticleRightAside>
-            </LayoutRightSidePortal>
-          </WrappedElementProvider>
-        </NoteHideIfSecret>
-      </IndentArticleContainer>
-
+          <LayoutRightSidePortal>
+            <ArticleRightAside>
+              <NoteActionAside />
+            </ArticleRightAside>
+          </LayoutRightSidePortal>
+        </WrappedElementProvider>
+      </NoteHideIfSecret>
       {/* <SubscribeBell defaultType="note_c" /> */}
       <ClientOnly>
         <div className="mt-8" data-hide-print />
@@ -122,8 +112,6 @@ async function PageInner({ data }: { data: NoteModel }) {
     </>
   )
 }
-
-export const dynamic = 'force-dynamic'
 
 type NoteDetailPageParams = {
   id: string
@@ -139,7 +127,7 @@ export const generateMetadata = async ({
   try {
     const res = await getData(params)
 
-    const data = res.data
+    const { data } = res
     const { title, text } = data
     const description = getSummaryFromMd(text ?? '')
 
@@ -187,20 +175,20 @@ export default definePrerenderPage<NoteDetailPageParams>()({
       <>
         <CurrentNoteNidProvider nid={nid} />
         <CurrentNoteDataProvider data={data} />
+
         <SyncNoteDataAfterLoggedIn />
-        <RoomProvider roomName={buildRoomName(data.data.id)}>
-          <Transition className="min-w-0" lcpOptimization>
-            <Paper key={nid} as={NoteMainContainer}>
-              <PageInner data={data.data} />
-            </Paper>
-            <BottomToUpSoftScaleTransitionView delay={500}>
-              <CommentAreaRootLazy
-                refId={data.data.id}
-                allowComment={data.data.allowComment}
-              />
-            </BottomToUpSoftScaleTransitionView>
-          </Transition>
-        </RoomProvider>
+
+        <Transition className="min-w-0" lcpOptimization>
+          <Paper key={nid} as={NoteMainContainer}>
+            <PageInner data={data.data} />
+          </Paper>
+          <BottomToUpSoftScaleTransitionView delay={500}>
+            <CommentAreaRootLazy
+              refId={data.data.id}
+              allowComment={data.data.allowComment}
+            />
+          </BottomToUpSoftScaleTransitionView>
+        </Transition>
 
         <NoteFontSettingFab />
 
